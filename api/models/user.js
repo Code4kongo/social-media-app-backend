@@ -3,12 +3,12 @@ const userSchema = mongoose.Schema({
 
     _id: mongoose.Schema.Types.ObjectId ,
     username: {type : String},
-    password: {type : String, required : true},
+    password: {type : String},
     picture: {type : String},
-    country: {type : String, required : true},
+    country: {type : String},
     age: Number,
     name: {type : String},
-    gender: {type : String, required : true},
+    gender: {type : String},
     company: {type : String},
     email: {
         type : String, 

@@ -13,11 +13,6 @@ const userRoutes = require('./api/routes/user')
 const companyRoutes = require('./api/routes/company')
 const commentsRoutes = require('./api/routes/comment')
 
-app.use('/uploads',express.static('uploads'))
-app.use('/uploads/user-profil',express.static('uploads/user-profil'))
-app.use(bodyParser.urlencoded({extended : false}))
-app.use(bodyParser.json())
-
 app.use((req, res, next) =>{
     res.header('Access-Control-Allow-Origin', '*')
     res.header('Access-Control-Allow-Headers', '*')
@@ -27,6 +22,11 @@ app.use((req, res, next) =>{
     }
     next()
 })
+
+app.use('/uploads/posts',express.static('uploads/posts'))
+app.use('/uploads/user-profil',express.static('uploads/user-profil'))
+app.use(bodyParser.urlencoded({extended : false}))
+app.use(bodyParser.json())
 
 app.use(morgan("dev"))
 app.use('/posts', postsRoutes)

@@ -4,7 +4,10 @@ const mongoose = require('mongoose')
 const moment = require('moment')
 const bcrypt = require('bcrypt')
 const multer = require('multer')
+const welcomeEmail = require('../middleware/email')
 const User = require('../models/user')
+
+welcomeEmail.welcomeEmail('jordy@gmail.com')
 
 const storage = multer.diskStorage({
     destination: function (req, file, cb) {
@@ -31,7 +34,7 @@ const upload = multer({
 route.get('/', async(req, res, next) => {
 
     try {
-            const users = await User.find().select('email name company phone about education info skills portfolio socialmedialink')
+            const users = await User.find().select('email name company phone email')
             res.status(200).json({ 
                 message : "USERS LISTS", 
                 users
@@ -44,7 +47,7 @@ route.get('/', async(req, res, next) => {
 })
 route.get('/:userId', async (req, res, next) => {
     try {
-            const user = await User.findById({_id : req.params.userId}).select('picture country name company email phone about education socialmedialink portfolio skills info')
+            const user = await User.findById({_id : req.params.userId}).select('picture country name company email phone about education socialmedialink portfolio skills info address registered gender')
             if(user){
                     res.status(200).json({
                         message : "USER SUCCESSFULLY FETCHED",
@@ -59,10 +62,9 @@ route.get('/:userId', async (req, res, next) => {
                 error : error.message})
             }
 })
-route.post('/signup', upload.single('picture'), async (req, res, next) => {
-    console.log("hello")
+route.post('/signup', async (req, res, next) => {
 
-    let { username, password , country, age, name, gender, company, email, phone, address, about, education, skills,portfolio,socialmedialink } = req.body
+    let { username, password , country, age, name, gender, company, email, phone, address, about, education, skills,portfolio,socialmedialink, picture} = req.body
     const  _id = new mongoose.Types.ObjectId() 
 
     try {
@@ -74,7 +76,7 @@ route.post('/signup', upload.single('picture'), async (req, res, next) => {
                 const hashedPassword = await bcrypt.hash(password, 10)
                 const user = new User({
                     _id , username,
-                    picture : req.file.path,
+                    picture ,
                     country,age,name,gender,company,email,phone,address,about,
                     registered : moment().format("MMM Do YY"),
                     education,
@@ -96,6 +98,7 @@ route.post('/signup', upload.single('picture'), async (req, res, next) => {
                         url : `localhost:8080/users/${newUser._id}`
                     } 
                 })
+                
             }
     }catch(error){
             res.status(500).json({
@@ -129,6 +132,7 @@ route.post('/login', async(req, res, next ) => {
                 error : error.message})
             }
 })
+// update image route  upload.single('picture')
 route.patch('/:userId', async(req, res, next ) => {
 
     const userId = req.params.userId

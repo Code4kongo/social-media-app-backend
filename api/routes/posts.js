@@ -6,9 +6,10 @@ const Post = require('../models/post')
 const Comment = require('../models/comments')
 const multer = require('multer')
 
+
 const storage = multer.diskStorage({
     destination: function (req, file, cb) {
-      cb(null, './uploads/')
+      cb(null, './uploads/posts')
     },
     filename: function (req, file, cb) {
       cb(null, Date.now() + file.originalname)
@@ -89,12 +90,33 @@ route.get('/comments/:postId', async(req, res, next) => {
                 error : error.message})
         }
 })
+route.get('/users/:email', async(req, res, next) => {   
+    const email = req.params.email
+
+    try {
+            const posts = await Post.find({email : email})
+            if(posts.length > 0){
+                res.status(200).json({
+                message : "ALL POSTS FETCHED SUCCESSFULLY",
+                count : posts.length,
+                posts 
+            })
+            }else {
+                res.status(404).json({
+                    message : "NO POSTS FOUND "})
+            }
+    }catch(error){
+            res.status(500).json({
+                message : "Something went wrong",
+                error : error.message})
+            }
+})
 route.post('/', upload.single('postImage'), async(req, res, next) => {
-    
-    const { title,country, author,content,likes, comments } = req.body
+
+    const { title,country, author,content,likes, comments, email } = req.body
     const _id =  new mongoose.Types.ObjectId()
     let date = moment().format("MMM Do YY")
-    const email = "jordy@test.com"
+    
     
     const post = new Post({
         _id,title,country,email,author,content,date,likes, comments, postImage : req.file.path
@@ -162,5 +184,6 @@ route.delete('/:postId', async(req, res, next) => {
                 error : error.message})
     }
 })
+
 
 module.exports =  route

@@ -4,6 +4,7 @@ const mongoose = require('mongoose')
 const moment = require('moment')
 const multer = require('multer')
 const bcrypt = require('bcrypt')
+const jwt = require('jsonwebtoken')
 const Company = require('../models/company')
 
 
@@ -64,7 +65,7 @@ route.get('/:companyId', async(req, res, next) => {
                 error : error.message})
     }
 })
-route.post('/signup', upload.single('picture'), async(req, res, next) => {
+route.post('/signup', async(req, res, next) => {
 
     let { company, password, country, createdAt, email, phone, address, about, skills,portfolio,socialmedialink , total_number_employee} = req.body
     const  _id = new mongoose.Types.ObjectId() 
@@ -79,19 +80,15 @@ route.post('/signup', upload.single('picture'), async(req, res, next) => {
                 })
             }else{
                 const hashedPassword = await bcrypt.hash(password, 10)
-        
+
                 const newCompany = new Company({
                     _id , company,
-                    picture : req.file.path,
+                    picture : "",
                     country,createdAt,company,email,phone,address,about,
                     registered : moment().format("MMM Do YY"),
                     info: { 
                         overview : "", 
-                        awards : [{ 
-                            title : "",
-                            year : "",
-                            content : ""
-                        }]
+                        awards : []
                     },
                     skills,
                     portfolio,
@@ -128,9 +125,16 @@ route.post('/login', async (req, res, next ) => {
                     const result = await bcrypt.compare(req.body.password, companyPassword)
 
                     if(result){
+                        const token = jwt.sign({
+                            email : company.email,
+                            id : company._id
+                        }, 'thisisasecretkey', {
+                            expiresIn : "5h"
+                        })
                         res.status(200).json({
                             message : "SUCCESSFULLY LOGGED IN",
-                            company })
+                            company, 
+                            token })
                     }else{
                         res.status(400).json({
                             message : "AUTHENTICATION FAILED !"})
@@ -164,7 +168,7 @@ route.patch('/:companyId', async(req, res, next ) => {
     }catch(error){
             res.status(500).json({
                 message : "AN ERROR OCCURED",
-                error : error.message})
+                error : error})
            }
 })
 route.delete('/:companyId',async (req, res, next) => {

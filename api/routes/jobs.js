@@ -3,13 +3,33 @@ const mongoose = require('mongoose')
 const moment = require('moment')
 const route = express.Router();
 const Job = require('../models/jobs')
+const auth = require('../middleware/auth')
 
 
 
-route.get('/', async(req, res, next) => {
-    
+route.get('/', async(req, res, next) => {    
     try {
        const jobs = await Job.find()
+        if(jobs.length > 0){
+            res.status(200).json({
+                message : "ALL JOBS FETCHED SUCCESSFULLY",
+                count : jobs.length,
+                jobs 
+        })
+        }else {
+            res.status(404).json({
+                message : "NO JOBS FOUND "})
+        }
+    }catch(error){
+            res.status(500).json({
+                message : "Something went wrong",
+                error : error.message})
+        }
+})
+route.get('/my-jobs', async(req, res, next) => {    
+    const email = req.query.email
+    try {
+       const jobs = await Job.find({ email })
         if(jobs.length > 0){
             res.status(200).json({
                 message : "ALL JOBS FETCHED SUCCESSFULLY",
@@ -51,8 +71,8 @@ route.post('/', async(req, res, next) => {
     const { title, applicants,country, author,content,jobType, salary, views, email, phone, address, overview, total_employee, socialmedialink } = req.body
     const _id =  new mongoose.Types.ObjectId()
     let date = moment().format("MMM Do YY")
-    console.log(date)
     const job = new Job({_id, title, applicants , jobType, salary,views,country,author, email,phone,content, overview ,total_employee,socialmedialink,date, address})
+    console.log(job)
 
     try {
         const newJob = await job.save()
@@ -88,7 +108,7 @@ route.patch('/:jobId', async(req, res, next) => {
                 error : error.message})
             }
 })
-route.delete('/:jobId', async(req, res, next) => {
+route.delete('/:jobId', auth, async(req, res, next) => {
 
     const jobId = req.params.jobId
 

@@ -3,7 +3,7 @@ const mongoose = require('mongoose')
 const jobSchema = mongoose.Schema({
     _id: mongoose.Schema.Types.ObjectId ,
     title: {type : String, required : true},
-    applicants: Number ,
+    applicants: {type : Number, default : 0} ,
     jobType: {type : String, required : true},
     salary: Number,
     views: Number,

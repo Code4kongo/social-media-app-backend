@@ -20,11 +20,7 @@ const companySchema = mongoose.Schema({
     total_number_employee : Number,
     info: {
         overview : {type : String},
-        awards : [ {
-            title : {type : String},
-            year : {type : String},
-            content : {type : String}
-        }],
+        awards : [ String ],
     },
     skills: [String],
     portfolio: [String],
@@ -33,3 +29,4 @@ const companySchema = mongoose.Schema({
 
 
 module.exports = mongoose.model('Company', companySchema)
+  
