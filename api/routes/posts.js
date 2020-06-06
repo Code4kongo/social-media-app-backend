@@ -1,0 +1,156 @@
+const express = require('express')
+const mongoose = require('mongoose')
+const route = express.Router();
+const Post = require('../models/post')
+const multer = require('multer')
+
+const storage = multer.diskStorage({
+    destination: function (req, file, cb) {
+      cb(null, './uploads/')
+    },
+    filename: function (req, file, cb) {
+      cb(null, Date.now() + file.originalname)
+    }
+})
+const fileFilter = (req, file, cb ) => {
+      if(file.mimetype === 'image/jpeg' || file.mimetype === 'image/png' || file.mimetype === 'image/jpg'){
+        cb(null, true)
+      } else {
+          cb(null, false)
+      }
+}
+const upload = multer({ 
+        storage : storage, 
+        limits : { fileSize : 1024 * 1024 * 5 },
+        fileFilter : fileFilter
+})
+
+
+route.get('/',(req, res, next) => {
+
+    Post.find()
+        .then(posts => {
+           if(posts.length > 0){
+               res.status(200).json({
+                message : "ALL POSTS FETCHED SUCCESSFULLY",
+                count : posts.length,
+                posts : posts.map(post => {
+                    return {
+                        post,
+                        request : {
+                            type : 'GET',
+                            url : `localhost:8080/posts/${post._id}`
+                        }
+                    }
+                })
+            })
+           }else {
+                res.status(404).json({
+                    message : "NO POSTS FOUND "})
+           }})
+        .catch(error => {
+            console.log(error)
+            res.status(500).json({
+                message : "Something went wrong",
+                error : error.message})
+        })
+})
+route.get('/:postId',(req, res, next) => {
+
+    const postId = req.params.postId
+
+    Post.findById(postId)
+        .then(post => {
+            if(post){
+                    res.status(200).json({
+                        message : "POST SUCCESSFULLY FETCHED",
+                        post })
+            }else {
+                res.status(404).json({
+                    message : "No Valid entry found for provided Id"})
+             } })
+        .catch(error => {
+            res.status(500).json({
+                message : "AN ERROR OCCURED",
+                error : error.message})
+        })
+})
+route.post('/', upload.single('postImage'),(req, res, next) => {
+
+    console.log(req.file)
+
+    const { title,country, author,content,likes, comments } = req.body
+    const _id =  new mongoose.Types.ObjectId()
+
+    const post = new Post({
+        _id,title,country,author,content,date: Date(),likes, comments, postImage : req.file.path
+    }) 
+    post.save()
+        .then(post => {
+            res.json({
+                message : "POST CREATED",
+                createdPost : post,
+                request : {
+                    type : 'GET',
+                    url : `localhost:8080/posts/${post._id}`
+                } 
+            })
+        })
+        .catch(error => {
+            res.status(500).json({
+                message : "AN ERROR OCCURED",
+                error : error.message });
+
+    })
+})
+route.patch('/:postId',(req, res, next) => {
+
+    const postId = req.params.postId
+    const props = req.body
+    Post.update({_id : postId}, props)
+        .then(post => {
+            res.status(200).json({
+                messgae : "POST SUCCESSFULLY UPDATED",
+                post,
+                request : {
+                    type : 'GET',
+                    url : `localhost:8080/posts/${post._id}`
+                }
+            })
+        })
+        .catch(error => {
+            res.status(500).json({
+                message : "AN ERROR OCCURED",
+                error : error.message
+            })
+        })
+})
+route.delete('/:postId',(req, res, next) => {
+
+    const postId = req.params.postId
+
+    Post.findByIdAndDelete({_id : postId})
+        .then(post => {
+            if(post){
+                res.status(200).json({
+                    message : "POST SUCCESSFULLY DELETED",
+                    post,
+                    request : {
+                        type : 'CREATE POST',
+                        url : `localhost:8080/posts/${post._id}`
+                    }
+                })
+            }else {
+                res.status(404).json({
+                    message : "NO POST FOUND" })
+            }
+        })
+        .catch(error => {
+            res.status(500).json({
+                message : "AN ERROR OCCURED",
+                error : error.message
+            })
+        })
+})
+
+module.exports =  route
