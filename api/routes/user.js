@@ -4,22 +4,19 @@ const mongoose = require('mongoose')
 const bcrypt = require('bcrypt')
 const User = require('../models/user')
 
-route.get('/', (req, res, next) => {
+route.get('/', async(req, res, next) => {
 
-    User.find()
-        .select('email name company phone about education info skills portfolio socialmedialink')
-        .then(users => {
+    try {
+            const users = await User.find().select('email name company phone about education info skills portfolio socialmedialink')
             res.status(200).json({ 
                 message : "USERS LISTS", 
                 users
             })
-        })
-        .catch(error =>{
+    }catch(error){
             res.status(500).json({
                 message : "AN ERROR OCCURED",
                 error : error.message})
-        
-        })
+            }
 })
 route.get('/:userId', (req, res, next) => {
     User.findById({_id : req.params.userId})
