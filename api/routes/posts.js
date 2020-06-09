@@ -1,5 +1,6 @@
 const express = require('express')
 const mongoose = require('mongoose')
+const moment = require('moment')
 const route = express.Router();
 const Post = require('../models/post')
 const multer = require('multer')
@@ -26,41 +27,31 @@ const upload = multer({
 })
 
 
-route.get('/',(req, res, next) => {
+route.get('/', async(req, res, next) => {
 
-    Post.find()
-        .then(posts => {
-           if(posts.length > 0){
-               res.status(200).json({
+    try {
+            const posts = await Post.find()
+            if(posts.length > 0){
+                res.status(200).json({
                 message : "ALL POSTS FETCHED SUCCESSFULLY",
                 count : posts.length,
-                posts : posts.map(post => {
-                    return {
-                        post,
-                        request : {
-                            type : 'GET',
-                            url : `localhost:8080/posts/${post._id}`
-                        }
-                    }
-                })
+                posts 
             })
-           }else {
+            }else {
                 res.status(404).json({
                     message : "NO POSTS FOUND "})
-           }})
-        .catch(error => {
-            console.log(error)
+            }
+    }catch(error){
             res.status(500).json({
                 message : "Something went wrong",
                 error : error.message})
-        })
+            }
 })
-route.get('/:postId',(req, res, next) => {
+route.get('/:postId', async(req, res, next) => {
 
     const postId = req.params.postId
-
-    Post.findById(postId)
-        .then(post => {
+    try {
+            const post = await  Post.findById(postId)
             if(post){
                     res.status(200).json({
                         message : "POST SUCCESSFULLY FETCHED",
@@ -68,47 +59,45 @@ route.get('/:postId',(req, res, next) => {
             }else {
                 res.status(404).json({
                     message : "No Valid entry found for provided Id"})
-             } })
-        .catch(error => {
+            }
+    }catch(error){
             res.status(500).json({
                 message : "AN ERROR OCCURED",
                 error : error.message})
-        })
+            }
 })
-route.post('/', upload.single('postImage'),(req, res, next) => {
-
-    console.log(req.file)
+route.post('/', upload.single('postImage'), async(req, res, next) => {
 
     const { title,country, author,content,likes, comments } = req.body
     const _id =  new mongoose.Types.ObjectId()
+    let date = moment().format("MMM Do YY")
 
     const post = new Post({
-        _id,title,country,author,content,date: Date(),likes, comments, postImage : req.file.path
+        _id,title,country,author,content,date,likes, comments, postImage : req.file.path
     }) 
-    post.save()
-        .then(post => {
+    try {
+            const newPost = await post.save()
             res.json({
-                message : "POST CREATED",
-                createdPost : post,
+                message : "newPCREATED",
+                createdPost : newPost,
                 request : {
                     type : 'GET',
-                    url : `localhost:8080/posts/${post._id}`
-                } 
+                    url : `localhost:8080/posts/${newPost._id}`} 
+                    
             })
-        })
-        .catch(error => {
+    }catch(error){
             res.status(500).json({
                 message : "AN ERROR OCCURED",
                 error : error.message });
-
-    })
+    }
 })
-route.patch('/:postId',(req, res, next) => {
+route.patch('/:postId', async(req, res, next) => {
 
     const postId = req.params.postId
     const props = req.body
-    Post.update({_id : postId}, props)
-        .then(post => {
+
+    try {
+            const post = await Post.update({_id : postId}, props)
             res.status(200).json({
                 messgae : "POST SUCCESSFULLY UPDATED",
                 post,
@@ -117,40 +106,35 @@ route.patch('/:postId',(req, res, next) => {
                     url : `localhost:8080/posts/${post._id}`
                 }
             })
-        })
-        .catch(error => {
+    }catch(error){
             res.status(500).json({
                 message : "AN ERROR OCCURED",
                 error : error.message
             })
-        })
+    }
 })
-route.delete('/:postId',(req, res, next) => {
+route.delete('/:postId', async(req, res, next) => {
 
     const postId = req.params.postId
-
-    Post.findByIdAndDelete({_id : postId})
-        .then(post => {
+    try {
+            const post = await Post.findByIdAndDelete({_id : postId})
             if(post){
                 res.status(200).json({
                     message : "POST SUCCESSFULLY DELETED",
                     post,
                     request : {
                         type : 'CREATE POST',
-                        url : `localhost:8080/posts/${post._id}`
-                    }
+                        url : `localhost:8080/posts/${post._id}`}
                 })
             }else {
                 res.status(404).json({
                     message : "NO POST FOUND" })
             }
-        })
-        .catch(error => {
+    }catch(error){
             res.status(500).json({
                 message : "AN ERROR OCCURED",
-                error : error.message
-            })
-        })
+                error : error.message})
+            }
 })
 
 module.exports =  route

@@ -12,7 +12,7 @@ const jobSchema = mongoose.Schema({
     email: {type : String, required : true},
     phone: {type : String, required : true},
     content: {type : String, required : true},
-    date: {type : Date, required : true},
+    date: {type : String, required : true},
     address: {type : String, required : true},
     socialmedialink : [String],
     overview : {type : String, required : true},
