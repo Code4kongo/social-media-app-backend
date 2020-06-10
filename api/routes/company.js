@@ -44,6 +44,7 @@ route.post('/signup', async(req, res, next) => {
     let { company, password, picture, country, createdAt, email, phone, address, about, skills,portfolio,socialmedialink, info , total_number_employee} = req.body
     const { overview, awards } = info
     const  _id = new mongoose.Types.ObjectId() 
+    console.log(req.body)
 
     try{
 
@@ -65,13 +66,13 @@ route.post('/signup', async(req, res, next) => {
                     total_number_employee,
                     password : hashedPassword
                 })
-                const company = await newCompany.save()
+                const createdCompany = await newCompany.save()
                 res.json({
                     message : "COMPANY CREATED",
-                    createdCompany : company,
+                    createdCompany,
                     request : {
                         type : 'GET',
-                        url : `localhost:8080/company/${company._id}`
+                        url : `localhost:8080/company/${createdCompany._id}`
                     } 
                 })
             }

@@ -1,5 +1,6 @@
 const express = require('express')
 const mongoose = require('mongoose')
+const moment = require('moment')
 const route = express.Router();
 const Post = require('../models/post')
 const multer = require('multer')
@@ -30,19 +31,11 @@ route.get('/', async(req, res, next) => {
 
     try {
             const posts = await Post.find()
-
             if(posts.length > 0){
                 res.status(200).json({
                 message : "ALL POSTS FETCHED SUCCESSFULLY",
                 count : posts.length,
-                posts : posts.map(post => {
-                    return {
-                        post,
-                        request : {
-                            type : 'GET',
-                            url : `localhost:8080/posts/${post._id}`}
-                    }
-                })
+                posts 
             })
             }else {
                 res.status(404).json({
@@ -77,9 +70,10 @@ route.post('/', upload.single('postImage'), async(req, res, next) => {
 
     const { title,country, author,content,likes, comments } = req.body
     const _id =  new mongoose.Types.ObjectId()
+    let date = moment().format("MMM Do YY")
 
     const post = new Post({
-        _id,title,country,author,content,date: Date(),likes, comments, postImage : req.file.path
+        _id,title,country,author,content,date,likes, comments, postImage : req.file.path
     }) 
     try {
             const newPost = await post.save()

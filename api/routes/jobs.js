@@ -1,25 +1,20 @@
 const express = require('express')
 const mongoose = require('mongoose')
+const moment = require('moment')
 const route = express.Router();
 const Job = require('../models/jobs')
 
 
-route.get('/', async(req, res, next) => {
 
+route.get('/', async(req, res, next) => {
+    
     try {
        const jobs = await Job.find()
         if(jobs.length > 0){
             res.status(200).json({
                 message : "ALL JOBS FETCHED SUCCESSFULLY",
                 count : jobs.length,
-                jobs : jobs.map(job => {
-                    return {
-                        job,
-                        request : {
-                            type : 'GET',
-                            url : `localhost:8080/jobs/${job._id}`}
-                    }
-            })
+                jobs 
         })
         }else {
             res.status(404).json({
@@ -55,16 +50,18 @@ route.post('/', async(req, res, next) => {
 
     const { title, applicants,country, author,content,jobType, salary, views, email, phone, address, overview, total_employee, socialmedialink } = req.body
     const _id =  new mongoose.Types.ObjectId()
-    const job = new job({_id, title, applicants , jobType, salary,views,country,author, email,phone,content, overview ,total_employee,socialmedialink,date: Date(), address})
+    let date = moment().format("MMM Do YY")
+    console.log(date)
+    const job = new Job({_id, title, applicants , jobType, salary,views,country,author, email,phone,content, overview ,total_employee,socialmedialink,date, address})
 
     try {
-        const job = await job.save()
+        const newJob = await job.save()
         res.json({
             message : "JOB CREATED",
-            createdjob : job,
+            createdjob : newJob,
             request : {
                 type : 'GET',
-                url : `localhost:8080/jobs/${job._id}`} 
+                url : `localhost:8080/jobs/${newJob._id}`} 
         })
     }catch(error){
             res.status(500).json({
