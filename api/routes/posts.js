@@ -3,6 +3,7 @@ const mongoose = require('mongoose')
 const moment = require('moment')
 const route = express.Router();
 const Post = require('../models/post')
+const Comment = require('../models/comments')
 const multer = require('multer')
 
 const storage = multer.diskStorage({
@@ -30,7 +31,7 @@ const upload = multer({
 route.get('/', async(req, res, next) => {
 
     try {
-            const posts = await Post.find()
+            const posts = await Post.find().populate("comments")
             if(posts.length > 0){
                 res.status(200).json({
                 message : "ALL POSTS FETCHED SUCCESSFULLY",
@@ -66,15 +67,40 @@ route.get('/:postId', async(req, res, next) => {
                 error : error.message})
             }
 })
+route.get('/comments/:postId', async(req, res, next) => {
+        const postId = req.params.postId
+        
+        try {
+                const comments = await Comment.find({post : postId})
+                if(!comments){
+                    res.json({
+                        message : "No Comments Yet"
+                    })
+                }else {
+                    res.status(200).json({
+                        message : "COMMENTS FETCHED",
+                        count : comments.length,
+                        comments})
+                }
+            
+        }catch(error){
+            res.status(500).json({
+                message : "AN ERROR OCCURED",
+                error : error.message})
+        }
+})
 route.post('/', upload.single('postImage'), async(req, res, next) => {
-
+    
     const { title,country, author,content,likes, comments } = req.body
     const _id =  new mongoose.Types.ObjectId()
     let date = moment().format("MMM Do YY")
-
+    const email = "jordy@test.com"
+    
     const post = new Post({
-        _id,title,country,author,content,date,likes, comments, postImage : req.file.path
+        _id,title,country,email,author,content,date,likes, comments, postImage : req.file.path
     }) 
+    console.log(post)
+    
     try {
             const newPost = await post.save()
             res.json({
@@ -134,7 +160,7 @@ route.delete('/:postId', async(req, res, next) => {
             res.status(500).json({
                 message : "AN ERROR OCCURED",
                 error : error.message})
-            }
+    }
 })
 
 module.exports =  route

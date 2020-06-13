@@ -1,14 +1,37 @@
 const express = require('express')
 const route = express.Router()
 const mongoose = require('mongoose')
+const moment = require('moment')
+const multer = require('multer')
 const bcrypt = require('bcrypt')
 const Company = require('../models/company')
 
 
+const storage = multer.diskStorage({
+    destination: function (req, file, cb) {
+      cb(null, './uploads/company-profil')
+    },
+    filename: function (req, file, cb) {
+      cb(null, Date.now() + file.originalname)
+    }
+})
+const fileFilter = (req, file, cb ) => {
+      if(file.mimetype === 'image/jpeg' || file.mimetype === 'image/png' || file.mimetype === 'image/jpg'){
+        cb(null, true)
+      } else {
+          cb(null, false)
+      }
+}
+const upload = multer({ 
+        storage : storage, 
+        limits : { fileSize : 1024 * 1024 * 5 },
+        fileFilter : fileFilter
+})
+
 route.get('/', async(req, res, next) => {
 
     try {
-            const company = await Company.find() .select('email company phone about info skills portfolio socialmedialink')
+            const company = await Company.find() .select(' _id company createdAt phone email')
             if(company.length < 1) res.status(404).json({message : "No Companies found"})
             res.status(200).json({ 
                 message : "companyS LISTS", 
@@ -23,7 +46,9 @@ route.get('/', async(req, res, next) => {
 })
 route.get('/:companyId', async(req, res, next) => {
     try {
-            const company = await Company.findById({_id : req.params.companyId}).select('picture country name company email phone about education socialmedialink portfolio skills info')
+            const company = await Company.findById({_id : req.params.companyId})
+            .select('_id company  picture country createdAt email  phone  address  about  registered info skills portfolio socialmedialink')
+        
             if(company){
                 res.status(200).json({
                     message : "COMPANY SUCCESSFULLY FETCHED",
@@ -39,10 +64,9 @@ route.get('/:companyId', async(req, res, next) => {
                 error : error.message})
     }
 })
-route.post('/signup', async(req, res, next) => {
+route.post('/signup', upload.single('picture'), async(req, res, next) => {
 
-    let { company, password, picture, country, createdAt, email, phone, address, about, skills,portfolio,socialmedialink, info , total_number_employee} = req.body
-    const { overview, awards } = info
+    let { company, password, country, createdAt, email, phone, address, about, skills,portfolio,socialmedialink , total_number_employee} = req.body
     const  _id = new mongoose.Types.ObjectId() 
     console.log(req.body)
 
@@ -57,9 +81,18 @@ route.post('/signup', async(req, res, next) => {
                 const hashedPassword = await bcrypt.hash(password, 10)
         
                 const newCompany = new Company({
-                    _id , company,picture,country,createdAt,company,email,phone,address,about,
-                    registered : Date.now(),
-                    info: { overview, awards},
+                    _id , company,
+                    picture : req.file.path,
+                    country,createdAt,company,email,phone,address,about,
+                    registered : moment().format("MMM Do YY"),
+                    info: { 
+                        overview : "", 
+                        awards : [{ 
+                            title : "",
+                            year : "",
+                            content : ""
+                        }]
+                    },
                     skills,
                     portfolio,
                     socialmedialink,

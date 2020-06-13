@@ -3,6 +3,7 @@ const Post = require('../models/post')
 const Job = require('../models/jobs')
 const User = require('../models/user')
 const Company = require('../models/company')
+const Comment = require('../models/comments')
 
 // const dbName = 'social-media-app'
 

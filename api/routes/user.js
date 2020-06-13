@@ -1,8 +1,32 @@
 const express = require('express')
 const route = express.Router()
 const mongoose = require('mongoose')
+const moment = require('moment')
 const bcrypt = require('bcrypt')
+const multer = require('multer')
 const User = require('../models/user')
+
+const storage = multer.diskStorage({
+    destination: function (req, file, cb) {
+      cb(null, './uploads/user-profil')
+    },
+    filename: function (req, file, cb) {
+      cb(null, Date.now() + file.originalname)
+    }
+})
+const fileFilter = (req, file, cb ) => {
+      if(file.mimetype === 'image/jpeg' || file.mimetype === 'image/png' || file.mimetype === 'image/jpg'){
+        cb(null, true)
+      } else {
+          cb(null, false)
+      }
+}
+const upload = multer({ 
+        storage : storage, 
+        limits : { fileSize : 1024 * 1024 * 5 },
+        fileFilter : fileFilter
+})
+
 
 route.get('/', async(req, res, next) => {
 
@@ -35,10 +59,10 @@ route.get('/:userId', async (req, res, next) => {
                 error : error.message})
             }
 })
-route.post('/signup',async (req, res, next) => {
+route.post('/signup', upload.single('picture'), async (req, res, next) => {
+    console.log("hello")
 
-    let { username, password, picture, country, age, name, gender, company, email, phone, address, about, education, skills,portfolio,socialmedialink, info } = req.body
-    const { overview, experience } = info
+    let { username, password , country, age, name, gender, company, email, phone, address, about, education, skills,portfolio,socialmedialink } = req.body
     const  _id = new mongoose.Types.ObjectId() 
 
     try {
@@ -49,10 +73,15 @@ route.post('/signup',async (req, res, next) => {
             }else{
                 const hashedPassword = await bcrypt.hash(password, 10)
                 const user = new User({
-                    _id , username,picture,country,age,name,gender,company,email,phone,address,about,
-                    registered : Date.now(),
-                    info: { overview, experience},
+                    _id , username,
+                    picture : req.file.path,
+                    country,age,name,gender,company,email,phone,address,about,
+                    registered : moment().format("MMM Do YY"),
                     education,
+                    info: { 
+                        overview : "", 
+                        experience : ""
+                    },
                     skills,
                     portfolio,
                     socialmedialink,

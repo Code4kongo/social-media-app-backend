@@ -20,7 +20,11 @@ const companySchema = mongoose.Schema({
     total_number_employee : Number,
     info: {
         overview : {type : String},
-        awards : [String],
+        awards : [ {
+            title : {type : String},
+            year : {type : String},
+            content : {type : String}
+        }],
     },
     skills: [String],
     portfolio: [String],
