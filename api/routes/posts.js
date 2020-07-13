@@ -112,19 +112,26 @@ route.get('/users/:email', async(req, res, next) => {
             }
 })
 route.post('/', upload.single('postImage'), async(req, res, next) => {
-
+    
     const { title,country, author,content,likes, comments, email } = req.body
     const _id =  new mongoose.Types.ObjectId()
     let date = moment().format("MMM Do YY")
-    
+
+    let postImage = ''
+
+    console.log(req.file === undefined)
+
+    if (req.file === undefined)  postImage = 'No image'
+    else if (req.file !== undefined)  postImage = req.file.path
+        
     
     const post = new Post({
-        _id,title,country,email,author,content,date,likes, comments, postImage : req.file.path
+        _id,title,country,email,author,content,date,likes, comments, postImage 
     }) 
-    console.log(post)
     
     try {
             const newPost = await post.save()
+            console.log(newPost)
             res.json({
                 message : "newPCREATED",
                 createdPost : newPost,
@@ -133,6 +140,7 @@ route.post('/', upload.single('postImage'), async(req, res, next) => {
                     url : `localhost:8080/posts/${newPost._id}`} 
                     
             })
+            console.log(newPost)
     }catch(error){
             res.status(500).json({
                 message : "AN ERROR OCCURED",

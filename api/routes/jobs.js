@@ -108,7 +108,7 @@ route.patch('/:jobId', async(req, res, next) => {
                 error : error.message})
             }
 })
-route.delete('/:jobId', auth, async(req, res, next) => {
+route.delete('/:jobId', async(req, res, next) => {
 
     const jobId = req.params.jobId
 

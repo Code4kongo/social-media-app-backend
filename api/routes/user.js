@@ -7,7 +7,6 @@ const multer = require('multer')
 const welcomeEmail = require('../middleware/email')
 const User = require('../models/user')
 
-welcomeEmail.welcomeEmail('jordy@gmail.com')
 
 const storage = multer.diskStorage({
     destination: function (req, file, cb) {
