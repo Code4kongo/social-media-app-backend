@@ -31,7 +31,7 @@ const upload = multer({
 
 
 route.get('/', async(req, res, next) => {
-
+    
     try {
             const users = await User.find().select('email name company phone email')
             res.status(200).json({ 
@@ -43,6 +43,22 @@ route.get('/', async(req, res, next) => {
                 message : "AN ERROR OCCURED",
                 error : error.message})
             }
+})
+route.get('/profil-pic', async(req, res, next) => {
+
+    const email = req.query.email
+
+    if(email !== undefined ){
+        try { const users_pictures = await User.find({email}).select('picture')
+        res.status(200).json({ 
+            message : "USERS IMAGES LISTS", 
+            users_pictures
+        })}catch(error){
+            res.status(500).json({
+                message : "AN ERROR OCCURED",
+                error : error.message})
+            }
+    }
 })
 route.get('/:userId', async (req, res, next) => {
     try {
@@ -131,7 +147,27 @@ route.post('/login', async(req, res, next ) => {
                 error : error.message})
             }
 })
-// update image route  upload.single('picture')
+route.patch('/picture/:userId', upload.single('picture'), async (req, res, next) => {
+    
+    const userId = req.params.userId
+
+    try {
+            const user = await User.updateOne({_id : userId}, { picture: req.file.path });
+            res.status(200).json({
+                messgae : "USER  IMAGE SUCCESSFULLY UPDATED",
+                user,
+                request : {
+                    type : 'GET',
+                    url : `localhost:8080/user/${user._id}`}
+            })
+            
+    }catch(error){
+            res.status(500).json({
+                message : "AN ERROR OCCURED",
+                error : error.message })
+            }
+
+})
 route.patch('/:userId', async(req, res, next ) => {
 
     const userId = req.params.userId

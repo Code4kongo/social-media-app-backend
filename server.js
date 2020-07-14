@@ -25,6 +25,7 @@ app.use((req, res, next) =>{
 
 app.use('/uploads/posts',express.static('uploads/posts'))
 app.use('/uploads/user-profil',express.static('uploads/user-profil'))
+app.use('/uploads/company-profil',express.static('uploads/company-profil'))
 app.use(bodyParser.urlencoded({extended : false}))
 app.use(bodyParser.json())
 

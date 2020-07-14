@@ -32,7 +32,7 @@ const upload = multer({
 route.get('/', async(req, res, next) => {
 
     try {
-            const company = await Company.find() .select(' _id company createdAt phone email')
+            const company = await Company.find() .select(' _id company createdAt phone email picture')
             if(company.length < 1) res.status(404).json({message : "No Companies found"})
             res.status(200).json({ 
                 message : "companyS LISTS", 
@@ -148,6 +148,28 @@ route.post('/login', async (req, res, next ) => {
             error : error.message})
     
     }
+})
+route.patch('/picture/:companyId', upload.single('picture'), async (req, res, next) => {
+    
+    const companyId = req.params.companyId
+    console.log(req.file.path)
+
+    try {
+            const company = await Company.updateOne({_id : companyId}, { picture: req.file.path });
+            res.status(200).json({
+                messgae : "COMPANY IMAGE SUCCESSFULLY UPDATED",
+                company,
+                request : {
+                    type : 'GET',
+                    url : `localhost:8080/company/${company._id}`}
+            })
+            
+    }catch(error){
+            res.status(500).json({
+                message : "AN ERROR OCCURED",
+                error : error.message })
+            }
+
 })
 route.patch('/:companyId', async(req, res, next ) => {
 
