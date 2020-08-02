@@ -72,8 +72,7 @@ route.post('/', async(req, res, next) => {
     const _id =  new mongoose.Types.ObjectId()
     let date = moment().format("MMM Do YY")
     const job = new Job({_id, title, applicants , jobType, salary,views,country,author, email,phone,content, overview ,total_employee,socialmedialink,date, address})
-    console.log(job)
-
+    
     try {
         const newJob = await job.save()
         res.json({

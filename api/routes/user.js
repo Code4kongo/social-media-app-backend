@@ -4,7 +4,8 @@ const mongoose = require('mongoose')
 const moment = require('moment')
 const bcrypt = require('bcrypt')
 const multer = require('multer')
-const welcomeEmail = require('../middleware/email')
+const welcomeEmail = require('../middleware/emails/subscription')
+const goodbyeEmail = require('../middleware/emails/unsubscription')
 const User = require('../models/user')
 
 
@@ -29,11 +30,10 @@ const upload = multer({
         fileFilter : fileFilter
 })
 
-
 route.get('/', async(req, res, next) => {
     
     try {
-            const users = await User.find().select('email name company phone email')
+            const users = await User.find().select('email name company phone email picture')
             res.status(200).json({ 
                 message : "USERS LISTS", 
                 users
@@ -44,25 +44,9 @@ route.get('/', async(req, res, next) => {
                 error : error.message})
             }
 })
-route.get('/profil-pic', async(req, res, next) => {
-
-    const email = req.query.email
-
-    if(email !== undefined ){
-        try { const users_pictures = await User.find({email}).select('picture')
-        res.status(200).json({ 
-            message : "USERS IMAGES LISTS", 
-            users_pictures
-        })}catch(error){
-            res.status(500).json({
-                message : "AN ERROR OCCURED",
-                error : error.message})
-            }
-    }
-})
 route.get('/:userId', async (req, res, next) => {
     try {
-            const user = await User.findById({_id : req.params.userId}).select('picture country name company email phone about education socialmedialink portfolio skills info address registered gender')
+            const user = await User.findById({_id : req.params.userId})
             if(user){
                     res.status(200).json({
                         message : "USER SUCCESSFULLY FETCHED",
@@ -105,6 +89,7 @@ route.post('/signup', async (req, res, next) => {
                     password : hashedPassword
                 })
                 const newUser = await user.save()
+                welcomeEmail.welcomeEmail(user.email)
                 res.json({
                     message : "USER CREATED",
                     createduser : newUser,
@@ -147,15 +132,35 @@ route.post('/login', async(req, res, next ) => {
                 error : error.message})
             }
 })
+route.post('/login-social-account', async(req, res, next) => {
+    try {
+        const user = await User.find({email : req.body.email})
+        console.log(user)
+        if(user.length < 1){
+            res.status(404).json({
+                message : " INVALID EMAIL OR PASSWORD " })
+        } else{
+            res.status(200).json({
+                message : "SUCCESSFULLY LOGGED IN",
+                user})      
+        }
+
+}catch(error){
+        res.status(500).json({
+            message : "AN ERROR OCCURED",
+            error : error.message})
+        }
+})
 route.patch('/picture/:userId', upload.single('picture'), async (req, res, next) => {
     
     const userId = req.params.userId
+    console.log(req.file)
 
     try {
             const user = await User.updateOne({_id : userId}, { picture: req.file.path });
             res.status(200).json({
                 messgae : "USER  IMAGE SUCCESSFULLY UPDATED",
-                user,
+                path : req.file.path,
                 request : {
                     type : 'GET',
                     url : `localhost:8080/user/${user._id}`}
@@ -194,6 +199,7 @@ route.delete('/:userId', async(req, res, next) => {
 
     try {
             const result = await User.remove({_id : userId})
+            goodbyeEmail.goodbyeEmail(user.email)
             res.status(200).json({
                 message : "USER SUCCESSFULLY DELETED",
                 result,

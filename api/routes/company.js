@@ -5,6 +5,8 @@ const moment = require('moment')
 const multer = require('multer')
 const bcrypt = require('bcrypt')
 const jwt = require('jsonwebtoken')
+const welcomeEmail = require('../middleware/emails/subscription')
+const goodbyeEmail = require('../middleware/emails/unsubscription')
 const Company = require('../models/company')
 
 
@@ -48,7 +50,6 @@ route.get('/', async(req, res, next) => {
 route.get('/:companyId', async(req, res, next) => {
     try {
             const company = await Company.findById({_id : req.params.companyId})
-            .select('_id company  picture country createdAt email  phone  address  about  registered info skills portfolio socialmedialink')
         
             if(company){
                 res.status(200).json({
@@ -97,6 +98,7 @@ route.post('/signup', async(req, res, next) => {
                     password : hashedPassword
                 })
                 const createdCompany = await newCompany.save()
+                welcomeEmail.welcomeEmail(createdCompany.email)
                 res.json({
                     message : "COMPANY CREATED",
                     createdCompany,
@@ -152,13 +154,12 @@ route.post('/login', async (req, res, next ) => {
 route.patch('/picture/:companyId', upload.single('picture'), async (req, res, next) => {
     
     const companyId = req.params.companyId
-    console.log(req.file.path)
 
     try {
             const company = await Company.updateOne({_id : companyId}, { picture: req.file.path });
             res.status(200).json({
                 messgae : "COMPANY IMAGE SUCCESSFULLY UPDATED",
-                company,
+                path : req.file.path,
                 request : {
                     type : 'GET',
                     url : `localhost:8080/company/${company._id}`}
@@ -199,6 +200,7 @@ route.delete('/:companyId',async (req, res, next) => {
 
     try {
         const result = await Company.remove({_id : companyId})
+        goodbyeEmail.goodbyeEmail(createdCompany.email)
         res.status(200).json({
             message : "COMPANY SUCCESSFULLY DELETED",
             result,
@@ -216,4 +218,4 @@ route.delete('/:companyId',async (req, res, next) => {
 
 
 
-module.exports = route
+module.exports = route 

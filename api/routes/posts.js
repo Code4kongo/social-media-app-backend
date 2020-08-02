@@ -4,6 +4,8 @@ const moment = require('moment')
 const route = express.Router();
 const Post = require('../models/post')
 const Comment = require('../models/comments')
+const User = require('../models/user')
+const Company = require('../models/company')
 const multer = require('multer')
 
 
@@ -90,9 +92,38 @@ route.get('/comments/:postId', async(req, res, next) => {
                 error : error.message})
         }
 })
+route.get('/profil/:email', async(req, res, next) => {
+    const email = req.params.email
+    
+    console.log(email)
+
+    if(email !== undefined ){
+        console.log(email)
+        try { 
+            const user_picture = await User.find({email})
+               if(user_picture.length > 0){
+                res.status(200).json({ 
+                    message : "USER IMAGE LISTS", 
+                    user_picture : user_picture[0].picture
+                })
+               }
+               else {
+                   const company_picture = await Company.find({email})
+                    res.status(200).json({ 
+                        message : "COMPANY IMAGE LISTS", 
+                        company_picture : company_picture[0].picture 
+                    })
+               }
+            }catch(error){
+            res.status(500).json({
+                message : "AN ERROR OCCURED",
+                error : error.message})
+            }
+    }
+})
 route.get('/users/:email', async(req, res, next) => {   
     const email = req.params.email
-
+    
     try {
             const posts = await Post.find({email : email})
             if(posts.length > 0){

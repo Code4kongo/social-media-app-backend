@@ -9,7 +9,7 @@ const postSchema = mongoose.Schema({
     content: {type : String, required : true},
     email : { type : String, required : true},
     date: String,
-    likes: Number,
+    likes: {type : Number, default : 0},
     postImage: {type : String},
     comments: [{
         type : mongoose.Schema.Types.ObjectId,
