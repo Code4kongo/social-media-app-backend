@@ -73,7 +73,6 @@ route.post('/signup', async(req, res, next) => {
     console.log(req.body)
 
     try{
-
            const existingCompany = await  Company.find({email : email})
             if(existingCompany.length >= 1){
                 return res.status(409).json({
@@ -199,16 +198,16 @@ route.delete('/:companyId',async (req, res, next) => {
     const companyId = req.params.companyId
 
     try {
-        const result = await Company.remove({_id : companyId})
-        goodbyeEmail.goodbyeEmail(createdCompany.email)
-        res.status(200).json({
-            message : "COMPANY SUCCESSFULLY DELETED",
-            result,
-            request : {
-                type : 'CREATE COMPANY',
-                url : `localhost:8080/company/`
-            }
-        })
+            const result = await Company.remove({_id : companyId})
+            goodbyeEmail.goodbyeEmail(createdCompany.email)
+            res.status(200).json({
+                message : "COMPANY SUCCESSFULLY DELETED",
+                result,
+                request : {
+                    type : 'CREATE COMPANY',
+                    url : `localhost:8080/company/`
+                }
+            })
     }catch(error){
             res.status(500).json({
                 message : "AN ERROR OCCURED",
