@@ -1,11 +1,16 @@
 {
-  "name": "epress-social-backend",
+  "name": "2connect",
   "version": "1.0.0",
   "description": "This is a social network app ",
   "main": "server.js",
   "scripts": {
     "start": "node server.js",
-    "dev": "nodemon server.js"
+    "client" : "npm start --prefix client",
+    "server" : "nodemon server.js",
+    "dev": "concurrently \"npm run server\" \"npm run client\""
+  },
+  "engines": {
+    "node": "12.18.2"
   },
   "author": "code4kongo",
   "license": "ISC",
@@ -13,6 +18,7 @@
     "@sendgrid/mail": "^7.2.1",
     "bcrypt": "^4.0.1",
     "body-parser": "^1.19.0",
+    "concurrently": "^5.2.0",
     "dotenv": "^8.2.0",
     "express": "^4.17.1",
     "jsonwebtoken": "^8.5.1",

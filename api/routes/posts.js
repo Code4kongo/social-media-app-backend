@@ -95,10 +95,8 @@ route.get('/comments/:postId', async(req, res, next) => {
 route.get('/profil/:email', async(req, res, next) => {
     const email = req.params.email
     
-    console.log(email)
 
     if(email !== undefined ){
-        console.log(email)
         try { 
             const user_picture = await User.find({email})
                if(user_picture.length > 0){
@@ -150,8 +148,6 @@ route.post('/', upload.single('postImage'), async(req, res, next) => {
 
     let postImage = ''
 
-    console.log(req.file === undefined)
-
     if (req.file === undefined)  postImage = 'No image'
     else if (req.file !== undefined)  postImage = req.file.path
         
@@ -162,7 +158,6 @@ route.post('/', upload.single('postImage'), async(req, res, next) => {
     
     try {
             const newPost = await post.save()
-            console.log(newPost)
             res.json({
                 message : "newPCREATED",
                 createdPost : newPost,
@@ -171,7 +166,6 @@ route.post('/', upload.single('postImage'), async(req, res, next) => {
                     url : `localhost:8080/posts/${newPost._id}`} 
                     
             })
-            console.log(newPost)
     }catch(error){
             res.status(500).json({
                 message : "AN ERROR OCCURED",

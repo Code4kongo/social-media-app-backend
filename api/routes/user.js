@@ -34,10 +34,19 @@ route.get('/', async(req, res, next) => {
     
     try {
             const users = await User.find().select('email name company phone email picture')
-            res.status(200).json({ 
-                message : "USERS LISTS", 
-                users
-            })
+
+            if(users < 1) {
+                res.status(404).json({ 
+                    message : "NO USER FOUND", 
+                    users
+                })
+            } else {
+                res.status(200).json({ 
+                    message : "USERS LISTS", 
+                    users
+                })
+            }
+
     }catch(error){
             res.status(500).json({
                 message : "AN ERROR OCCURED",
@@ -135,7 +144,6 @@ route.post('/login', async(req, res, next ) => {
 route.post('/login-social-account', async(req, res, next) => {
     try {
         const user = await User.find({email : req.body.email})
-        console.log(user)
         if(user.length < 1){
             res.status(404).json({
                 message : " INVALID EMAIL OR PASSWORD " })
@@ -154,7 +162,6 @@ route.post('/login-social-account', async(req, res, next) => {
 route.patch('/picture/:userId', upload.single('picture'), async (req, res, next) => {
     
     const userId = req.params.userId
-    console.log(req.file)
 
     try {
             const user = await User.updateOne({_id : userId}, { picture: req.file.path });

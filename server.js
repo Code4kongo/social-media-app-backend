@@ -31,7 +31,7 @@ app.use('/uploads/company-profil',express.static('uploads/company-profil'))
 app.use(bodyParser.urlencoded({extended : false}))
 app.use(bodyParser.json())
 
-app.use(morgan("dev"))
+// app.use(morgan("dev"))
 app.use('/posts', postsRoutes)
 app.use('/jobs', jobsRoutes)
 app.use('/user', userRoutes)

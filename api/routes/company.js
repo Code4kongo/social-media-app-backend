@@ -35,12 +35,16 @@ route.get('/', async(req, res, next) => {
 
     try {
             const company = await Company.find() .select(' _id company createdAt phone email picture')
-            if(company.length < 1) res.status(404).json({message : "No Companies found"})
-            res.status(200).json({ 
-                message : "companyS LISTS", 
-                company
-            })
-        
+            
+            if(company.length < 1) {
+                res.status(404).json({message : "No Companies found"})
+            } else {
+                res.status(200).json({ 
+                    message : "companyS LISTS", 
+                    company
+                })
+            }
+           
     }catch(error){
             res.status(500).json({
                 message : "AN ERROR OCCURED",
@@ -70,7 +74,6 @@ route.post('/signup', async(req, res, next) => {
 
     let { company, password, country, createdAt, email, phone, address, about, skills,portfolio,socialmedialink , total_number_employee} = req.body
     const  _id = new mongoose.Types.ObjectId() 
-    console.log(req.body)
 
     try{
            const existingCompany = await  Company.find({email : email})
