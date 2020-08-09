@@ -1,4 +1,5 @@
 const express = require('express')
+const path = require('path')
 require('dotenv').config()
 const morgan = require('morgan')
 const bodyParser = require('body-parser')
@@ -38,6 +39,13 @@ app.use('/user', userRoutes)
 app.use('/company', companyRoutes)
 app.use('/comments', commentsRoutes)
 app.use('/', emailRoutes)
+
+if(process.env.NODE_ENV === 'production'){
+    app.use(express.static('client/build'))
+    app.get('*', (res, req) => {
+        res.sendFile(path.resolve(__dirname, 'client', 'build' , 'index.html'))
+    })
+}
 
 
 
